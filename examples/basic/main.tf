@@ -9,6 +9,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
+    }
   }
 }
 
@@ -33,6 +37,8 @@ resource "aws_s3_bucket_versioning" "example" {
 }
 
 # Enable encryption
+# Note: This example uses AES256 for simplicity.
+# For production use, consider using aws:kms with a customer-managed key.
 resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
   bucket = aws_s3_bucket.example.id
 
