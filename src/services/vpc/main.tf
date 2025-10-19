@@ -8,6 +8,7 @@ data "aws_availability_zones" "available" {
 # Local variables for availability zones
 locals {
   # Use provided AZs if specified, otherwise use available AZs from data source
+  # When using custom AZs, ensure they are valid for the region where resources are deployed
   azs = length(var.availability_zones) > 0 ? var.availability_zones : data.aws_availability_zones.available.names
 }
 
@@ -29,6 +30,8 @@ resource "aws_subnet" "public" {
   count             = length(var.public_subnet_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.public_subnet_cidrs[count.index]
+  # Distribute subnets across AZs using modulo operation
+  # If subnets > AZs, some AZs will have multiple subnets
   availability_zone = local.azs[count.index % length(local.azs)]
 
   map_public_ip_on_launch = true
@@ -46,6 +49,8 @@ resource "aws_subnet" "private" {
   count             = length(var.private_subnet_cidrs)
   vpc_id            = aws_vpc.main.id
   cidr_block        = var.private_subnet_cidrs[count.index]
+  # Distribute subnets across AZs using modulo operation
+  # If subnets > AZs, some AZs will have multiple subnets
   availability_zone = local.azs[count.index % length(local.azs)]
 
   tags = merge(
